@@ -1,0 +1,29 @@
+# Mobile Optimization and GitHub Preparation Plan
+
+スマートフォンでのプレイを快適にし、GitHubへ公開するための準備を行います。
+
+## Proposed Changes
+
+### 1. モバイル版適応レイアウト (Responsive Design)
+- **メディアクエリの強化**: 画面幅が小さい場合（スマホなど）、盤面と未使用コマエリアを縦に並べるだけでなく、全体のサイズ感（盤面の1マス、コマの大きさ）を自動でスケールダウンするように調整します。
+- **タッチ操作の最適化**: ボタンやコマのクリック判定をスマホでも押しやすいサイズに保ちます。
+- **ビューポートの最適化**: 指でズームしなくても最適に表示されるように CSS を微調整します。
+
+### 2. GitHub 公開準備
+- **README.md の作成**: ゲームの概要、遊び方、ルール、技術スタックを記載した標準的な README を作成します。
+- **ファイル整理**: 公開時に分かりやすいよう、成果物を整理します。
+
+---
+
+## [MODIFY] [index.html](file:///C:/Users/big_b/.gemini/antigravity/brain/ec69c975-eb45-460e-8f4c-a3f854d1b4de/index.html)
+- CSS の `@media` セクションを大幅に強化。
+- モバイル時にヘッダーやステータスエリアが場所を取りすぎないようコンパクトに調整。
+
+## [NEW] [README.md](file:///C:/Users/big_b/.gemini/antigravity/brain/ec69c975-eb45-460e-8f4c-a3f854d1b4de/README.md)
+- プロジェクトのドキュメントを作成。
+
+## Verification Plan
+
+### Automated Tests (Browser Subagent)
+- ブラウザのモバイルエミュレーション機能（iPhone SEサイズ等）を使用して、全ての要素が画面内に収まり、重なりがないことを確認。
+- スマホ画面でも「クアルトを宣言！」ボタンが押しやすい位置にあることを確認。

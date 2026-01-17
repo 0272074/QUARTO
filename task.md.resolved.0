@@ -1,0 +1,17 @@
+# Quarto Game Continuation Task List
+
+- [ ] Project Exploration and Planning
+    - [/] Initialize task.md and research current state
+    - [ ] Explore gameplay in browser to identify improvement areas
+    - [ ] Propose new features or fixes to the user
+- [ ] UI/UX Enhancements
+    - [ ] (TBD) Add animations for smoother transitions
+    - [ ] (TBD) Implement sound effects
+    - [ ] (TBD) Improve 3D visual effects for pieces
+- [ ] Logic and Features
+    - [ ] (TBD) Implement score tracking with LocalStorage
+    - [ ] (TBD) Add an interactive tutorial
+- [ ] Verification
+    - [ ] Test all new features in the browser
+- [ ] Final Walkthrough
+    - [ ] Update walkthrough.md

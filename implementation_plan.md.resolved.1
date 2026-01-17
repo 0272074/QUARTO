@@ -1,0 +1,25 @@
+# Quarto Declaration Logic Improvement Plan
+
+自分の手番中であれば、前の着手に関わらずいつでもクアルトを宣言できるように改善します。
+
+## Proposed Changes
+
+### 1. 宣言ボタンの有効化
+- [updateStatus](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html#615-641) 関数を変更し、`lastPlacedIndex` が `null` であっても、自分の手番（人間プレイヤー、かつNPCが思考中でない）であれば常に「クアルトを宣言！」ボタンを有効にします。
+
+### 2. 盤面全体の勝利判定
+- [checkWin(lastIndex)](file:///C:/Users/big_b/.gemini/antigravity/brain/ec69c975-eb45-460e-8f4c-a3f854d1b4de/index.html#807-844) は特定のマスを通るラインのみをチェックしていましたが、盤面全体をスキャンしてクアルトが成立しているラインを見つける `checkAllWins()` 関数を追加します。
+- [declareQuarto()](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html#700-712) 関数で、この `checkAllWins()` を使用するように変更します。
+
+---
+
+## [MODIFY] [index.html](file:///C:/Users/big_b/.gemini/antigravity/brain/ec69c975-eb45-460e-8f4c-a3f854d1b4de/index.html)
+- `checkAllWins()` 関数を実装。
+- [declareQuarto()](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html#700-712) を盤面全体チェック方式に変更。
+- [updateStatus()](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html#615-641) のボタン無効化ロジックを緩和。
+
+## Verification Plan
+
+### Manual Verification
+1. 相手がクアルトを見逃して自分にコマを渡してきた際、**コマを置く前**に「クアルトを宣言！」を押して勝利できることを確認。
+2. 自分がコマを置いた後、**相手に渡すコマを選んでいる最中**にも「クアルトを宣言！」が押せることを確認。

@@ -1,0 +1,27 @@
+# Quarto Game Continuation Task List
+
+- [x] Project Exploration and Planning
+    - [x] Initialize task.md and research current state
+    - [x] Explore gameplay in browser to identify improvement areas
+    - [x] Propose new features or fixes to the user
+- [x] UI/UX Enhancements
+    - [x] Add NPC thinking animations and messages
+    - [x] Implement last move highlighting
+    - [x] Improved visual feedback for Quarto declarations
+- [x] Logic and Features
+    - [x] Implement score tracking with LocalStorage
+- [x] Declaration Logic Improvement
+    - [x] Enable declaration button throughout the player's turn
+    - [x] Update win check to scan the entire board
+- [x] Mobile Layout Optimization
+    - [x] Adjust board and pieces sizes for smaller screens
+    - [x] Update flex/grid layout for vertical stacks
+    - [x] Optimize touch targets
+- [x] GitHub Preparation
+    - [x] Add README.md with project description and rules
+    - [x] Finalize folder structure for export
+- [x] Verification
+    - [x] Test mobile layout using browser's mobile emulation
+    - [x] Test all new features in the browser
+- [x] Final Walkthrough
+    - [x] Update walkthrough.md

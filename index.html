@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quarto - クアルト (宣言漏れ再現版)</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-color: #38bdf8;
+            --danger-color: #f43f5e;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --board-color: #1e293b;
+            --cell-color: #334155;
+            --piece-white: #f8fafc;
+            --piece-black: #2d3748;
+            /* 暗いグレーに変更して視認性アップ */
+            --piece-accent-white: #cbd5e1;
+            --piece-accent-black: #1a202c;
+            --board-cell-bg: #2d3748;
+            --board-cell-hover: #4a5568;
+            --last-move-accent: rgba(251, 191, 36, 0.4);
+            --win-accent: rgba(56, 189, 248, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.025em;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 2rem;
+            max-width: 1200px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ① 盤面エリア */
+        .board-wrapper {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1 / 1;
+            margin: 0 auto;
+        }
+
+        .cell {
+            background-color: var(--cell-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        .cell.empty:hover {
+            background-color: #475569;
+            transform: scale(1.02);
+        }
+
+        .cell.occupied {
+            cursor: default;
+        }
+
+        .cell.highlight {
+            background-color: var(--win-accent);
+            box-shadow: 0 0 25px var(--accent-color);
+            z-index: 10;
+        }
+
+        .cell.last-move {
+            border: 2px solid #fbbf24;
+            box-shadow: inset 0 0 15px var(--last-move-accent);
+        }
+
+        /* ② 未使用コマ一覧エリア */
+        .pieces-wrapper {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            border-radius: 24px;
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+            position: relative;
+            /* Added for modal positioning */
+            overflow: hidden;
+        }
+
+        .pieces-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .unused-pieces {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+
+        .piece {
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            max-width: 70px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .piece:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            border-color: var(--accent-color);
+        }
+
+        .piece.selected {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
+
+        /* コマの見た目定義 */
+        .p-body {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 色 */
+        .p-white {
+            background-color: #f8fafc;
+            border: 1px solid #ffffff;
+            /* ハイライト */
+        }
+
+        .p-black {
+            background-color: #2d3748;
+            /* 少し明るく */
+            border: 1px solid #4a5568;
+            /* 輪郭を強調 */
+        }
+
+        /* 形 */
+        .p-round {
+            border-radius: 50%;
+        }
+
+        .p-square {
+            border-radius: 4px;
+        }
+
+        /* 高さ (3D的な厚みで表現) */
+        .p-tall {
+            width: 80%;
+            height: 80%;
+            margin-top: -15%;
+        }
+
+        .p-white.p-tall {
+            box-shadow: 0 10px 0 #94a3b8, 0 12px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .p-black.p-tall {
+            box-shadow: 0 10px 0 #000000, 0 12px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .p-short {
+            width: 80%;
+            height: 80%;
+            margin-top: 0px;
+        }
+
+        .p-white.p-short {
+            box-shadow: 0 2px 0 #94a3b8, 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .p-black.p-short {
+            box-shadow: 0 2px 0 #000000, 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 穴 */
+        .p-hole::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ③ 状態表示エリア */
+        .status-container {
+            width: 100%;
+            max-width: 820px;
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 200px;
+            gap: 1.5rem;
+            align-items: stretch;
+        }
+
+        .status-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+        }
+
+        .status-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .status-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .next-piece-box {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .next-piece-display {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed var(--glass-border);
+        }
+
+        /* ④ 操作ボタンエリア */
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #38bdf8, #2563eb);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .alert-declaration {
+            color: #fbbf24;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.6;
+            }
+        }
+
+        /* モーダル */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            /* Slightly darker to hide unused pieces */
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            border-radius: 24px;
+        }
+
+        .modal {
+            background: transparent;
+            padding: 1rem;
+            width: 100%;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        .modal h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        /* NPC設定 */
+        .npc-config {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .npc-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .npc-btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        @media (max-width: 800px) {
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .board-wrapper {
+                width: 100%;
+            }
+
+            .status-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                margin-top: 1rem;
+            }
+
+            .board {
+                max-width: 340px;
+                gap: 8px;
+            }
+
+            .pieces-wrapper {
+                width: 100%;
+                max-width: 340px;
+                padding: 15px;
+            }
+
+            .unused-pieces {
+                grid-template-columns: repeat(8, 1fr);
+            }
+
+            .status-card {
+                padding: 0.75rem 1rem;
+            }
+
+            .actions {
+                flex-direction: row;
+            }
+
+            .btn {
+                flex: 1;
+            }
+        }
+
+        @media (max-width: 400px) {
+
+            .board,
+            .pieces-wrapper {
+                max-width: 300px;
+            }
+
+            .unused-pieces {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* スコア表示 */
+        .score-board {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .score-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .score-val {
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-left: 4px;
+        }
+
+        /* NPCの思考表現 */
+        .thinking-dots::after {
+            content: '.';
+            animation: thinking 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes thinking {
+
+            0%,
+            20% {
+                content: '.';
+            }
+
+            40% {
+                content: '..';
+            }
+
+            60% {
+                content: '...';
+            }
+
+            80%,
+            100% {
+                content: '';
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>QUARTO</h1>
+        <div class="npc-config">
+            <button class="npc-btn active" onclick="setNPC(0)">対人戦</button>
+            <button class="npc-btn" onclick="setNPC(1)">NPC Lv.1</button>
+            <button class="npc-btn" onclick="setNPC(2)">NPC Lv.2</button>
+            <button class="npc-btn" onclick="setNPC(3)">NPC Lv.3</button>
+        </div>
+        <div id="score-display" class="score-board">
+            <!-- スコアはJSで生成 -->
+        </div>
+    </header>
+
+    <div class="game-container">
+        <!-- ① 盤面エリア -->
+        <div class="board-wrapper">
+            <div id="board" class="board">
+                <!-- マスはJSで生成 -->
+            </div>
+        </div>
+
+        <!-- ② 未使用コマ一覧エリア -->
+        <div class="pieces-wrapper">
+            <div class="pieces-title">未使用のコマ</div>
+            <div id="unused-pieces" class="unused-pieces">
+                <!-- コマはJSで生成 -->
+            </div>
+
+            <!-- モーダルをここに移動 -->
+            <div id="overlay" class="overlay">
+                <div class="modal">
+                    <h2 id="modal-title">勝利！</h2>
+                    <p id="modal-message">プレイヤーAの勝ちです。</p>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;"
+                        onclick="restartGame()">もう一度遊ぶ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ③ 状態表示エリア -->
+    <div class="status-container">
+        <div class="status-card">
+            <div class="status-label">現在のプレイヤー</div>
+            <div id="status-player" class="status-value">プレイヤーA</div>
+            <div id="status-phase" class="status-label" style="margin-top: 0.5rem; color: var(--accent-color);">
+                相手に渡すコマを選んでください</div>
+        </div>
+
+        <div class="status-card next-piece-box">
+            <div>
+                <div class="status-label">置くべきコマ</div>
+                <div id="status-piece-name" class="status-value" style="font-size: 1rem;">なし</div>
+            </div>
+            <div id="next-piece-display" class="next-piece-display">
+                <!-- 選択中のコマを表示 -->
+            </div>
+        </div>
+
+        <!-- ④ 操作ボタンエリア -->
+        <div class="actions">
+            <button id="btn-declare" class="btn btn-primary" onclick="declareQuarto()" disabled>
+                <span>クアルトを宣言！</span>
+            </button>
+            <button class="btn btn-secondary" onclick="restartGame()">
+                リスタート
+            </button>
+        </div>
+    </div>
+
+    <div id="declaration-alert" class="alert-declaration" style="display: none; text-align: center;">
+        ✨ 今ならクアルトを宣言できます！
+    </div>
+
+    <script>
+        /**
+         * コマの属性定義 (4ビット)
+         * bit 0: 色 (0: 白, 1: 黒)
+         * bit 1: 形 (0: 丸, 2: 四角)
+         * bit 2: 高さ (0: 高い, 4: 低い)
+         * bit 3: 穴 (0: 有, 8: 無)
+         */
+        const PIECES = [];
+        for (let i = 0; i < 16; i++) {
+            PIECES.push({
+                id: i,
+                attr: i,
+                used: false
+            });
+        }
+
+        const PHASES = {
+            CHOOSING: 'CHOOSING', // 相手に渡すコマを選ぶ（宣言も可能）
+            PLACING: 'PLACING'    // 渡されたコマを置く（宣言も可能）
+        };
+
+        let board = Array(16).fill(null);
+        let currentPhase = PHASES.CHOOSING;
+        let currentPlayer = 0; // 0: A, 1: B
+        let selectedPieceId = null;
+        let lastPlacedIndex = null;
+        let npcLevel = 0; // 0: 人, 1: Lv1, 2: Lv2, 3: Lv3
+        let isGameOver = false;
+        let winInfo = null; // { line, attrName, attrValue }
+        let scores = {
+            win: 0,
+            lose: 0,
+            draw: 0
+        };
+        let npcIsThinking = false;
+
+        const boardEl = document.getElementById('board');
+        const unusedEl = document.getElementById('unused-pieces');
+        const statusPlayerEl = document.getElementById('status-player');
+        const statusPhaseEl = document.getElementById('status-phase');
+        const nextPieceDisplayEl = document.getElementById('next-piece-display');
+        const nextPieceNameEl = document.getElementById('status-piece-name');
+        const btnDeclare = document.getElementById('btn-declare');
+        const btnNext = document.getElementById('btn-next');
+        const declAlert = document.getElementById('declaration-alert');
+        const overlay = document.getElementById('overlay');
+
+        function init() {
+            loadScores();
+            renderBoard();
+            renderUnusedPieces();
+            updateStatus();
+            updateScoreDisplay();
+
+            // NPC戦でNPCが先手の場合の自動開始
+            if (!isGameOver && npcLevel > 0 && currentPlayer === 1 && currentPhase === PHASES.CHOOSING) {
+                npcIsThinking = true;
+                updateStatus();
+                setTimeout(npcChoose, 1500);
+            }
+        }
+
+        function renderBoard() {
+            boardEl.innerHTML = '';
+            for (let i = 0; i < 16; i++) {
+                const cell = document.createElement('div');
+                const isHighlighted = winInfo && winInfo.line.includes(i);
+                const isLastMove = !winInfo && lastPlacedIndex === i;
+                cell.className = `cell ${board[i] === null ? 'empty' : 'occupied'} ${isHighlighted ? 'highlight' : ''} ${isLastMove ? 'last-move' : ''}`;
+                cell.onclick = () => handleCellClick(i);
+                if (board[i] !== null) {
+                    cell.appendChild(createPieceElement(board[i]));
+                }
+                boardEl.appendChild(cell);
+            }
+        }
+
+        function renderUnusedPieces() {
+            unusedEl.innerHTML = '';
+            PIECES.forEach(p => {
+                if (!p.used && p.id !== selectedPieceId) {
+                    const el = document.createElement('div');
+                    el.className = 'piece';
+                    el.onclick = () => handlePieceSelection(p.id);
+                    el.appendChild(createPieceElement(p.id));
+                    unusedEl.appendChild(el);
+                }
+            });
+        }
+
+        function createPieceElement(id) {
+            const attr = PIECES[id].attr;
+            const piece = document.createElement('div');
+            piece.className = 'p-body';
+
+            const isBlack = (attr & 1);
+            const isSquare = (attr & 2);
+            const isShort = (attr & 4);
+            const hasNoHole = (attr & 8);
+
+            piece.classList.add(isBlack ? 'p-black' : 'p-white');
+            piece.classList.add(isSquare ? 'p-square' : 'p-round');
+            piece.classList.add(isShort ? 'p-short' : 'p-tall');
+            if (!hasNoHole) piece.classList.add('p-hole');
+
+            return piece;
+        }
+
+        function updateStatus() {
+            const playerNames = ["プレイヤーA", "プレイヤーB"];
+            statusPlayerEl.innerText = playerNames[currentPlayer];
+
+            if (currentPhase === PHASES.CHOOSING) {
+                statusPhaseEl.innerText = "相手に渡すコマを選んでください";
+                nextPieceNameEl.innerText = "選択中...";
+                nextPieceDisplayEl.innerHTML = '';
+            } else if (currentPhase === PHASES.PLACING) {
+                statusPhaseEl.innerText = "コマを盤面に置いてください";
+                if (selectedPieceId !== null) {
+                    nextPieceDisplayEl.innerHTML = '';
+                    nextPieceDisplayEl.appendChild(createPieceElement(selectedPieceId));
+                    nextPieceNameEl.innerText = getPieceDesc(selectedPieceId);
+                }
+            }
+
+            // 自分のターン中はいつでも宣言可能（NPCの思考中を除く）
+            const isUserTurn = (currentPlayer === 0 || npcLevel === 0);
+            btnDeclare.disabled = !isUserTurn || isGameOver || npcIsThinking;
+
+            // 誰かが置いた後ならアラートを表示
+            declAlert.style.display = (lastPlacedIndex === null || isGameOver || npcIsThinking) ? 'none' : 'block';
+
+            if (isGameOver) {
+                btnDeclare.disabled = true;
+            }
+
+            if (npcIsThinking) {
+                statusPlayerEl.innerHTML = `NPC思考中<span class="thinking-dots"></span>`;
+                statusPhaseEl.innerText = "少し待ってください...";
+                btnDeclare.disabled = true;
+                declAlert.style.display = 'none';
+            }
+        }
+
+        function getPieceDesc(id) {
+            const attr = PIECES[id].attr;
+            const color = (attr & 1) ? "黒" : "白";
+            const shape = (attr & 2) ? "四角" : "丸";
+            const height = (attr & 4) ? "低い" : "高い";
+            const hole = (attr & 8) ? "無" : "有";
+            return `${color}/${shape}/${height}/穴${hole}`;
+        }
+
+        // handlePieceSelection で lastPlacedIndex をリセットする
+        function handlePieceSelection(id) {
+            if (currentPhase !== PHASES.CHOOSING || isGameOver) return;
+
+            selectedPieceId = id;
+            lastPlacedIndex = null; // コマが渡されたので前回の宣言権は消滅
+            currentPhase = PHASES.PLACING;
+            currentPlayer = 1 - currentPlayer;
+
+            renderUnusedPieces();
+            updateStatus();
+
+            if (!isGameOver && currentPlayer === 1 && npcLevel > 0) {
+                npcIsThinking = true;
+                updateStatus();
+                setTimeout(npcPlace, 1200);
+            }
+        }
+
+        function handleCellClick(index) {
+            if (currentPhase !== PHASES.PLACING || board[index] !== null || isGameOver) return;
+            if (currentPlayer === 1 && npcLevel > 0) return;
+
+            placePiece(index);
+        }
+
+        function placePiece(index) {
+            board[index] = selectedPieceId;
+            PIECES[selectedPieceId].used = true;
+            lastPlacedIndex = index;
+            selectedPieceId = null;
+            currentPhase = PHASES.CHOOSING;
+
+            renderBoard();
+            renderUnusedPieces();
+            updateStatus();
+
+            if (!isGameOver && currentPlayer === 1 && npcLevel > 0) {
+                // NPCがコマを選ぶ前に少し待つ（人間が宣言する猶予、およびNPC自身の宣言チェック）
+                npcIsThinking = true;
+                updateStatus();
+                setTimeout(() => {
+                    npcIsThinking = false;
+                    if (isGameOver) return;
+                    const win = checkWin(index);
+                    if (win) {
+                        declareQuarto();
+                    } else {
+                        npcChoose();
+                    }
+                }, 2000);
+            } else {
+                npcIsThinking = false; // 人間の手番
+                updateStatus();
+            }
+        }
+
+        function declareQuarto() {
+            if (isGameOver || npcIsThinking) return;
+
+            const win = checkAllWins();
+            if (win) {
+                // 宣言したプレイヤーの勝利
+                showGameOver(currentPlayer, true, win);
+            } else {
+                // 誤宣言したプレイヤーの敗北（相手の勝利）
+                showGameOver(1 - currentPlayer, false);
+            }
+        }
+
+        const ATTR_NAMES = ["色", "形", "高さ", "穴"];
+        const ATTR_VALUES = [
+            ["白", "黒"],
+            ["丸", "四角"],
+            ["高い", "低い"],
+            ["有", "無"]
+        ];
+
+        function checkWin(index) {
+            return checkAllWins();
+        }
+
+        // 盤面全体をチェックしてどこかにクアルトが成立していないか確認する
+        function checkAllWins() {
+            // 全ての勝利ラインの定義
+            const allLines = [];
+            // 横
+            for (let r = 0; r < 4; r++) allLines.push([r * 4, r * 4 + 1, r * 4 + 2, r * 4 + 3]);
+            // 縦
+            for (let c = 0; c < 4; c++) allLines.push([c, c + 4, c + 8, c + 12]);
+            // 斜め
+            allLines.push([0, 5, 10, 15]);
+            allLines.push([3, 6, 9, 12]);
+
+            for (const line of allLines) {
+                if (line.some(idx => board[idx] === null)) continue;
+                const attrs = line.map(idx => PIECES[board[idx]].attr);
+
+                let commonOn = 0xF;
+                let commonOff = 0xF;
+
+                for (const attr of attrs) {
+                    commonOn &= attr;
+                    commonOff &= (~attr & 0xF);
+                }
+
+                if (commonOn !== 0 || commonOff !== 0) {
+                    // どの属性が揃ったか特定する
+                    for (let bit = 0; bit < 4; bit++) {
+                        if (commonOn & (1 << bit)) {
+                            return { line, attrName: ATTR_NAMES[bit], attrValue: ATTR_VALUES[bit][1] };
+                        }
+                        if (commonOff & (1 << bit)) {
+                            return { line, attrName: ATTR_NAMES[bit], attrValue: ATTR_VALUES[bit][0] };
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function showGameOver(winner, normal, info) {
+            isGameOver = true;
+            winInfo = info;
+            const playerNames = ["プレイヤーA", "プレイヤーB"];
+            document.getElementById('modal-title').innerText = normal ? "Quarto!" : "誤宣言！";
+
+            let msg = `${playerNames[winner]} の勝利です。`;
+            if (normal && info) {
+                msg += `<br><span style="color: var(--accent-color); font-size: 0.9rem;">「${info.attrName}：${info.attrValue}」が揃いました！</span>`;
+            }
+            document.getElementById('modal-message').innerHTML = msg;
+            overlay.style.display = 'flex';
+            renderBoard(); // ハイライトを反映
+
+            // スコア更新
+            if (npcLevel > 0) {
+                if (winner === 0) scores.win++;
+                else scores.lose++;
+                saveScores();
+                updateScoreDisplay();
+            }
+        }
+
+        function restartGame() {
+            board = Array(16).fill(null);
+            currentPhase = PHASES.CHOOSING;
+
+            // NPC戦の場合は先手をランダムに決定
+            if (npcLevel > 0) {
+                currentPlayer = Math.floor(Math.random() * 2);
+            } else {
+                currentPlayer = 0;
+            }
+
+            selectedPieceId = null;
+            lastPlacedIndex = null;
+            isGameOver = false;
+            winInfo = null;
+            PIECES.forEach(p => p.used = false);
+
+            npcIsThinking = false;
+            overlay.style.display = 'none';
+            init();
+        }
+
+        function loadScores() {
+            const saved = localStorage.getItem('quarto_scores');
+            if (saved) {
+                scores = JSON.parse(saved);
+            }
+        }
+
+        function saveScores() {
+            localStorage.setItem('quarto_scores', JSON.stringify(scores));
+        }
+
+        function updateScoreDisplay() {
+            const display = document.getElementById('score-display');
+            if (npcLevel === 0) {
+                display.innerHTML = `<span>対人戦モード</span>`;
+            } else {
+                display.innerHTML = `
+                    <div class="score-item">勝<span class="score-val">${scores.win}</span></div>
+                    <div class="score-item">負<span class="score-val">${scores.lose}</span></div>
+                `;
+            }
+        }
+
+        function setNPC(lv) {
+            npcLevel = lv;
+            document.querySelectorAll('.npc-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === lv);
+            });
+            restartGame();
+        }
+
+        function npcPlace() {
+            if (isGameOver) return;
+
+            let bestIndex = -1;
+            const emptyIndices = board.map((v, i) => v === null ? i : -1).filter(v => v !== -1);
+
+            if (npcLevel >= 2) {
+                for (let idx of emptyIndices) {
+                    board[idx] = selectedPieceId;
+                    if (checkWin(idx)) {
+                        bestIndex = idx;
+                        board[idx] = null;
+                        break;
+                    }
+                    board[idx] = null;
+                }
+            }
+
+            if (bestIndex === -1) {
+                bestIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+            }
+
+            npcIsThinking = false;
+            placePiece(bestIndex);
+        }
+
+        function npcChoose() {
+            if (isGameOver) return;
+            npcIsThinking = true;
+            updateStatus();
+
+            const unusedIds = PIECES.filter(p => !p.used).map(p => p.id);
+            let chosenId = -1;
+
+            if (npcLevel === 3) {
+                const safeIds = [];
+                for (let id of unusedIds) {
+                    let isSafe = true;
+                    for (let i = 0; i < 16; i++) {
+                        if (board[i] === null) {
+                            board[i] = id;
+                            if (checkWin(i)) {
+                                isSafe = false;
+                                board[i] = null;
+                                break;
+                            }
+                            board[i] = null;
+                        }
+                    }
+                    if (isSafe) safeIds.push(id);
+                }
+                if (safeIds.length > 0) {
+                    chosenId = safeIds[Math.floor(Math.random() * safeIds.length)];
+                } else {
+                    chosenId = unusedIds[0];
+                }
+            }
+
+            if (chosenId === -1) {
+                chosenId = unusedIds[Math.floor(Math.random() * unusedIds.length)];
+            }
+
+            npcIsThinking = false;
+            handlePieceSelection(chosenId);
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

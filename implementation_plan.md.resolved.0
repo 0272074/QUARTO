@@ -1,0 +1,35 @@
+# Quarto Game Polish and Enhancements Plan
+
+このプロジェクトをさらに魅力的にするため、以下の改善と機能追加を提案します。
+
+## Proposed Changes
+
+### 1. UXの向上と視覚的フィードバック
+- **NPCの思考中表示**: NPCが考えている間（`setTimeout`での待機中）、ステータス欄に「NPCが考えています...」といったメッセージや点滅アニメーションを表示します。
+- **最終着手マスのハイライト**: 最後にコマが置かれたマスを一目でわかるようにハイライトを追加します（勝利時のハイライトとは別の色）。これにより、NPCの動きを追いやすくなります。
+- **ステータス情報の明確化**: 「相手に渡すコマを選んでください」などのメッセージを、今誰が何をしているのかより直感的に伝わる表現に調整します。
+
+### 2. スコア記録機能
+- **LocalStorageの活用**: NPCのレベルごとの勝敗数をブラウザに保存し、タイトル付近やリスタートボタンの横に合計スコアを表示します。
+
+### 3. モーダルの改善
+- **勝利情報の詳細化**: どの属性が揃って勝利したのか、より視覚的に強調して表示します。
+
+---
+
+## [MODIFY] [index.html](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html)
+- CSSに新しいハイライト用のクラス（`.last-move`）を追加。
+- [updateStatus](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html#615-641) 関数を拡張して、NPCの思考状態を表示できるように変更。
+- [placePiece](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html#675-699) 関数で最後に置かれたマスのインデックスを保持し、盤面レンダリングに反映。
+- [showGameOver](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html#759-773) 時に `localStorage` を更新するロジックを追加。
+- 初期化時 ([init](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html#559-569)) に保存されたスコアを読み込む処理を追加。
+
+## Verification Plan
+
+### Automated Tests (Browser Subagent)
+- NPCと対戦し、着手後にマスがハイライトされることを確認。
+- 勝利/敗北後にスコアがカウントアップされていることを確認。
+
+### Manual Verification
+- リスタートしてもスコアが保持されていることを確認。
+- NPCの手番でメッセージが表示され、プレイヤーが操作不能になっていることを確認。
