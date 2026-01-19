@@ -1,27 +1,27 @@
-# Quarto Game Continuation Task List
+# Quarto Game Development Task List
 
-- [x] Project Exploration and Planning
-    - [x] Initialize task.md and research current state
-    - [x] Explore gameplay in browser to identify improvement areas
-    - [x] Propose new features or fixes to the user
-- [x] UI/UX Enhancements
-    - [x] Add NPC thinking animations and messages
-    - [x] Implement last move highlighting
-    - [x] Improved visual feedback for Quarto declarations
-- [x] Logic and Features
-    - [x] Implement score tracking with LocalStorage
-- [x] Declaration Logic Improvement
-    - [x] Enable declaration button throughout the player's turn
-    - [x] Update win check to scan the entire board
-- [x] Mobile Layout Optimization
-    - [x] Adjust board and pieces sizes for smaller screens
-    - [x] Update flex/grid layout for vertical stacks
-    - [x] Optimize touch targets
-- [x] GitHub Preparation
-    - [x] Add README.md with project description and rules
-    - [x] Finalize folder structure for export
+- [x] Project Setup
+    - [x] Initialize task.md
+    - [x] Create implementation_plan.md
+- [x] Core Implementation
+    - [x] Basic HTML/CSS Structure (4 areas)
+    - [x] Piece Data and Rendering
+    - [x] Game State Management (Phases)
+    - [x] Piece Selection Logic
+    - [x] Piece Placement Logic
+    - [x] Win Condition Detection
+    - [x] Quarto Declaration Logic (including omission rule)
+- [x] NPC Implementation
+    - [x] Level 1 (Random)
+    - [x] Level 2 (Defensive/Aggressive)
+    - [x] Level 3 (Look ahead)
+- [x] UI/UX Polishing
+    - [x] Responsive Design
+    - [x] Premium Animations and Transitions
+    - [x] Sound Effects (if applicable, though user asked for self-contained)
 - [x] Verification
-    - [x] Test mobile layout using browser's mobile emulation
-    - [x] Test all new features in the browser
+    - [x] Browser testing for all phases
+    - [x] Verify Quarto declaration omission rule
+    - [x] Verify NPC behavior
 - [x] Final Walkthrough
-    - [x] Update walkthrough.md
+    - [x] Create walkthrough.md

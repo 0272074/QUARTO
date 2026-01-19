@@ -1,17 +1,27 @@
-# Quarto Game Continuation Task List
+# Quarto Game Development Task List
 
-- [ ] Project Exploration and Planning
-    - [/] Initialize task.md and research current state
-    - [ ] Explore gameplay in browser to identify improvement areas
-    - [ ] Propose new features or fixes to the user
-- [ ] UI/UX Enhancements
-    - [ ] (TBD) Add animations for smoother transitions
-    - [ ] (TBD) Implement sound effects
-    - [ ] (TBD) Improve 3D visual effects for pieces
-- [ ] Logic and Features
-    - [ ] (TBD) Implement score tracking with LocalStorage
-    - [ ] (TBD) Add an interactive tutorial
+- [ ] Project Setup
+    - [x] Initialize task.md
+    - [ ] Create implementation_plan.md
+- [ ] Core Implementation
+    - [ ] Basic HTML/CSS Structure (4 areas)
+    - [ ] Piece Data and Rendering
+    - [ ] Game State Management (Phases)
+    - [ ] Piece Selection Logic
+    - [ ] Piece Placement Logic
+    - [ ] Win Condition Detection
+    - [ ] Quarto Declaration Logic (including omission rule)
+- [ ] NPC Implementation
+    - [ ] Level 1 (Random)
+    - [ ] Level 2 (Defensive/Aggressive)
+    - [ ] Level 3 (Look ahead)
+- [ ] UI/UX Polishing
+    - [ ] Responsive Design
+    - [ ] Premium Animations and Transitions
+    - [ ] Sound Effects (if applicable, though user asked for self-contained)
 - [ ] Verification
-    - [ ] Test all new features in the browser
+    - [ ] Browser testing for all phases
+    - [ ] Verify Quarto declaration omission rule
+    - [ ] Verify NPC behavior
 - [ ] Final Walkthrough
-    - [ ] Update walkthrough.md
+    - [ ] Create walkthrough.md

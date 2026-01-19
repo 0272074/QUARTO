@@ -1,35 +1,39 @@
-# Quarto Game Polish and Enhancements Plan
+# Quarto Implementation Plan
 
-このプロジェクトをさらに魅力的にするため、以下の改善と機能追加を提案します。
+実物のクアルトのルール（特に宣言漏れ指摘）を忠実に再現した、ローカル動作可能なウェブゲームを構築します。
 
 ## Proposed Changes
 
-### 1. UXの向上と視覚的フィードバック
-- **NPCの思考中表示**: NPCが考えている間（`setTimeout`での待機中）、ステータス欄に「NPCが考えています...」といったメッセージや点滅アニメーションを表示します。
-- **最終着手マスのハイライト**: 最後にコマが置かれたマスを一目でわかるようにハイライトを追加します（勝利時のハイライトとは別の色）。これにより、NPCの動きを追いやすくなります。
-- **ステータス情報の明確化**: 「相手に渡すコマを選んでください」などのメッセージを、今誰が何をしているのかより直感的に伝わる表現に調整します。
+### [Component Name] Core Logistics
+単一の `index.html` に HTML, CSS, JavaScript を集約し、外部依存なしで動作させます。
 
-### 2. スコア記録機能
-- **LocalStorageの活用**: NPCのレベルごとの勝敗数をブラウザに保存し、タイトル付近やリスタートボタンの横に合計スコアを表示します。
+#### [NEW] [index.html](file:///c:/Users/big_b/.gemini/antigravity/brain/quarto-game/index.html)
+- **Data Structure**:
+  - `Piece`: `bits` (4ビットで属性を表現: 0000 to 1111)
+  - `Board`: 16マスの配列。
+  - `Phase`: `CHOOSING` (コマ選択), `PLACING` (コマ配置), `WAITING_DECLARATION` (宣言待機)
+- **Win Condition**:
+  - 4つのコマのビット論理積 (AND) またはビット否定の論理積が 0 でない属性があるか判定。
+- **Declaration Rule**:
+  - `WAITING_DECLARATION` フェーズを厳密に設け、自分が置いた後、または相手が置いた後に宣言ボタンを押せるようにします。
+- **NPC AI**:
+  - Lv 1: ランダム。
+  - Lv 2: 自分が勝てる手、または相手のクアルトを防ぐ手を優先。
+  - Lv 3: 1手先を読み、相手に勝ち目を与えないコマを渡す。
 
-### 3. モーダルの改善
-- **勝利情報の詳細化**: どの属性が揃って勝利したのか、より視覚的に強調して表示します。
-
----
-
-## [MODIFY] [index.html](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html)
-- CSSに新しいハイライト用のクラス（`.last-move`）を追加。
-- [updateStatus](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html#615-641) 関数を拡張して、NPCの思考状態を表示できるように変更。
-- [placePiece](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html#675-699) 関数で最後に置かれたマスのインデックスを保持し、盤面レンダリングに反映。
-- [showGameOver](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html#759-773) 時に `localStorage` を更新するロジックを追加。
-- 初期化時 ([init](file:///C:/Users/big_b/.gemini/antigravity/brain/f3636c1b-8495-4697-9ff7-a8aaf4a00e52/index.html#559-569)) に保存されたスコアを読み込む処理を追加。
+### UI Design
+- **Aesthetics**: Glassmorphism を採用し、プレミアムな雰囲気を作ります。
+- **Layout**: 
+  - 左側に 4x4 盤面。
+  - 右側に未使用コマ一覧。
+  - 下部に状態表示と操作ボタン。
+- **Piece Rendering**: SVG または CSS の擬似要素を使用して、高さ・穴・形・色を表現します。
 
 ## Verification Plan
 
-### Automated Tests (Browser Subagent)
-- NPCと対戦し、着手後にマスがハイライトされることを確認。
-- 勝利/敗北後にスコアがカウントアップされていることを確認。
-
 ### Manual Verification
-- リスタートしてもスコアが保持されていることを確認。
-- NPCの手番でメッセージが表示され、プレイヤーが操作不能になっていることを確認。
+1.  **通常勝利**: 自分がコマを置いた直後に「クアルト」を宣言して勝利することを確認。
+2.  **宣言漏れ指摘**: 相手がリーチを完成させたが宣言せずにコマ選択フェーズに移ろうとした際（またはその待機中）に、自分が宣言して勝利することを確認。
+3.  **誤宣言敗北**: クアルトが成立していないのに宣言して敗北することを確認。
+4.  **NPC対戦**: 各レベルのNPCが適切に動作することを確認。
+5.  **ローカル動作**: ファイルを直接開いて全ての機能（画像含む）が動作することを確認（SVGインライン化などで対応）。

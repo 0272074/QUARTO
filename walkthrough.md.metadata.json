@@ -1,5 +1,6 @@
 {
   "artifactType": "ARTIFACT_TYPE_WALKTHROUGH",
-  "summary": "Walkthrough update for the new Quarto game enhancements.",
-  "updatedAt": "2026-01-17T21:54:39.171093700Z"
+  "summary": "Walkthrough of the Quarto game development. Features screens and logic explanation.",
+  "updatedAt": "2026-01-17T21:38:39.262841200Z",
+  "version": "8"
 }

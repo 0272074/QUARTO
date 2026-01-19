@@ -1,29 +1,39 @@
-# Mobile Optimization and GitHub Preparation Plan
+# Quarto Implementation Plan
 
-スマートフォンでのプレイを快適にし、GitHubへ公開するための準備を行います。
+実物のクアルトのルール（特に宣言漏れ指摘）を忠実に再現した、ローカル動作可能なウェブゲームを構築します。
 
 ## Proposed Changes
 
-### 1. モバイル版適応レイアウト (Responsive Design)
-- **メディアクエリの強化**: 画面幅が小さい場合（スマホなど）、盤面と未使用コマエリアを縦に並べるだけでなく、全体のサイズ感（盤面の1マス、コマの大きさ）を自動でスケールダウンするように調整します。
-- **タッチ操作の最適化**: ボタンやコマのクリック判定をスマホでも押しやすいサイズに保ちます。
-- **ビューポートの最適化**: 指でズームしなくても最適に表示されるように CSS を微調整します。
+### [Component Name] Core Logistics
+単一の `index.html` に HTML, CSS, JavaScript を集約し、外部依存なしで動作させます。
 
-### 2. GitHub 公開準備
-- **README.md の作成**: ゲームの概要、遊び方、ルール、技術スタックを記載した標準的な README を作成します。
-- **ファイル整理**: 公開時に分かりやすいよう、成果物を整理します。
+#### [NEW] [index.html](file:///c:/Users/big_b/.gemini/antigravity/brain/quarto-game/index.html)
+- **Data Structure**:
+  - `Piece`: `bits` (4ビットで属性を表現: 0000 to 1111)
+  - `Board`: 16マスの配列。
+  - `Phase`: `CHOOSING` (コマ選択), `PLACING` (コマ配置), `WAITING_DECLARATION` (宣言待機)
+- **Win Condition**:
+  - 4つのコマのビット論理積 (AND) またはビット否定の論理積が 0 でない属性があるか判定。
+- **Declaration Rule**:
+  - `WAITING_DECLARATION` フェーズを厳密に設け、自分が置いた後、または相手が置いた後に宣言ボタンを押せるようにします。
+- **NPC AI**:
+  - Lv 1: ランダム。
+  - Lv 2: 自分が勝てる手、または相手のクアルトを防ぐ手を優先。
+  - Lv 3: 1手先を読み、相手に勝ち目を与えないコマを渡す。
 
----
-
-## [MODIFY] [index.html](file:///C:/Users/big_b/.gemini/antigravity/brain/ec69c975-eb45-460e-8f4c-a3f854d1b4de/index.html)
-- CSS の `@media` セクションを大幅に強化。
-- モバイル時にヘッダーやステータスエリアが場所を取りすぎないようコンパクトに調整。
-
-## [NEW] [README.md](file:///C:/Users/big_b/.gemini/antigravity/brain/ec69c975-eb45-460e-8f4c-a3f854d1b4de/README.md)
-- プロジェクトのドキュメントを作成。
+### UI Design
+- **Aesthetics**: Glassmorphism を採用し、プレミアムな雰囲気を作ります。
+- **Layout**: 
+  - 左側に 4x4 盤面。
+  - 右側に未使用コマ一覧。
+  - 下部に状態表示と操作ボタン。
+- **Piece Rendering**: SVG または CSS の擬似要素を使用して、高さ・穴・形・色を表現します。
 
 ## Verification Plan
 
-### Automated Tests (Browser Subagent)
-- ブラウザのモバイルエミュレーション機能（iPhone SEサイズ等）を使用して、全ての要素が画面内に収まり、重なりがないことを確認。
-- スマホ画面でも「クアルトを宣言！」ボタンが押しやすい位置にあることを確認。
+### Manual Verification
+1.  **通常勝利**: 自分がコマを置いた直後に「クアルト」を宣言して勝利することを確認。
+2.  **宣言漏れ指摘**: 相手がリーチを完成させたが宣言せずにコマ選択フェーズに移ろうとした際（またはその待機中）に、自分が宣言して勝利することを確認。
+3.  **誤宣言敗北**: クアルトが成立していないのに宣言して敗北することを確認。
+4.  **NPC対戦**: 各レベルのNPCが適切に動作することを確認。
+5.  **ローカル動作**: ファイルを直接開いて全ての機能（画像含む）が動作することを確認（SVGインライン化などで対応）。
